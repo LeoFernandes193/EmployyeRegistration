@@ -2,7 +2,9 @@ package br.com.employeeRegistration.repository;
 
 import br.com.employeeRegistration.entity.SectorEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface SectorEntityRepository extends JpaRepository<SectorEntity,Integer> {
 
     /**

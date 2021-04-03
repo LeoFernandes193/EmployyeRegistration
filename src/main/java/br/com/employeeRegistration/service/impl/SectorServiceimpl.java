@@ -6,11 +6,15 @@ import br.com.employeeRegistration.exception.BussinesException;
 import br.com.employeeRegistration.repository.SectorEntityRepository;
 import br.com.employeeRegistration.service.SectorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+@Service
+@Transactional
 public class SectorServiceimpl implements SectorService {
 
     @Autowired
@@ -27,7 +31,7 @@ public class SectorServiceimpl implements SectorService {
     public SectorDTO inclusionSector(String nameSector) {
         Optional.ofNullable(nameSector).orElseThrow(()-> new NullPointerException("NameSector cannot be null"));
 
-        String name = nameSector.toLowerCase();
+        String name = nameSector.toUpperCase();
 
         if (!sectorConsultation(name)){
            SectorEntity entity = sectorEntityRepository.save(convertToEntity(SectorDTO.builder()
@@ -91,15 +95,15 @@ public class SectorServiceimpl implements SectorService {
                 .dateInsert(new Date())
                 .build();
 
-        List<SectorEntity> list = sectorEntityRepository.findAll();
-
-        for (SectorEntity entity : list){
-            if (sectorConsultation(nameSector)){
-                sectorEntityRepository.save(convertToEntity(dto));
+            if (!sectorConsultation(nameSector)){
+                sectorEntityRepository.save(SectorEntity.builder()
+                        .idSector(dto.getId())
+                        .nameSector(dto.getNameSector())
+                        .dateInsert(dto.getDateInsert())
+                        .build());
             } else {
                 throw new BussinesException("Sector not updated");
             }
-        }
 
         return dto;
     }
@@ -120,12 +124,10 @@ public class SectorServiceimpl implements SectorService {
 
         List<SectorEntity> list = sectorEntityRepository.findAll();
 
-        for (SectorEntity entity : list){
             if (sectorConsultation(name)){
                 sectorEntityRepository.deleteByIdSectorAndNameSector(id,nameSector);
             } else {
                 throw new BussinesException("Sector does not exist");
-            }
         }
 
     }
