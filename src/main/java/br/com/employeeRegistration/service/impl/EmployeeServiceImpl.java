@@ -2,12 +2,15 @@ package br.com.employeeRegistration.service.impl;
 
 import br.com.employeeRegistration.dto.EmployeeDTO;
 import br.com.employeeRegistration.entity.*;
+import br.com.employeeRegistration.exception.BussinesException;
 import br.com.employeeRegistration.repository.EmployeeRegistrationRepository;
+import br.com.employeeRegistration.repository.SectorEntityRepository;
 import br.com.employeeRegistration.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,6 +31,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private SectorServiceimpl sectorService;
 
+    @Autowired
+    private SectorEmployeeServiceImpl sectorEmployeeService;
+
+    @Autowired
+    private SectorEntityRepository sectorEntityRepository;
+
+
     /**
      * Method for adding a new employee to the TB_EMPLOYEE_REGISTRATION table
      *
@@ -43,22 +53,38 @@ public class EmployeeServiceImpl implements EmployeeService {
 //        Optional.ofNullable(dto.getDateBirth()).orElseThrow(()-> new NullPointerException("DateBirth cannot be null"));
         Optional.ofNullable(dto.getEmail()).orElseThrow(()-> new NullPointerException("Email cannot be null"));
         Optional.ofNullable(dto.getPhone()).orElseThrow(()-> new NullPointerException("Phone cannot be null"));
-//        Optional.ofNullable(dto.getSector()).orElseThrow(()-> new NullPointerException("Sector cannot be null"));
+        Optional.ofNullable(dto.getSector()).orElseThrow(()-> new NullPointerException("Sector cannot be null"));
 
-        EmployeeRegistrationEntity entity = employeeRegistrationRepository.save(convetToEntity(dto));
-        EmailEmployeeEntity email = emailService.inclusionEmail(dto.getEmail(),entity);
-        PhoneEmployeeEntity phone = phoneService.inclusionPhone(dto.getPhone(), entity);
+        if (sectorService.sectorConsultation(dto.getSector())){
 
-        EmployeeDTO entityDTO = EmployeeDTO.builder()
-                .id(entity.getIdEmployee())
-                .name(entity.getNameEmployee())
-                .cpf(entity.getRegistrationPhysicalPerson())
-                .email(email.getEmailAndress())
-                .phone(phone.getPhoneEmployee())
-//                .sector(dto.getSector())
-                .build();
+            List<SectorEntity> entitySector = sectorEntityRepository.findAll();
 
-        return entityDTO ;
+            for (SectorEntity table : entitySector){
+                if (table.getNameSector().equals(dto.getSector().toUpperCase())){
+
+                    EmployeeRegistrationEntity entity = employeeRegistrationRepository.save(convetToEntity(dto));
+                    EmailEmployeeEntity email = emailService.inclusionEmail(dto.getEmail(),entity);
+                    PhoneEmployeeEntity phone = phoneService.inclusionPhone(dto.getPhone(), entity);
+                    SectorEmployeeEntity sectorEmoloyee = sectorEmployeeService.insertSectorEmployee(table,entity);
+
+                    EmployeeDTO entityDTO = EmployeeDTO.builder()
+                            .id(entity.getIdEmployee())
+                            .name(entity.getNameEmployee())
+                            .cpf(entity.getRegistrationPhysicalPerson())
+                            .email(email.getEmailAndress())
+                            .phone(phone.getPhoneEmployee())
+                            .sector(dto.getSector())
+                            .build();
+
+
+                    return entityDTO ;
+
+                }
+            }
+        }
+
+        throw new BussinesException("Employee not included");
+
     }
 
     /**

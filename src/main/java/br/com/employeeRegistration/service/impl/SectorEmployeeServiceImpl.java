@@ -6,9 +6,11 @@ import br.com.employeeRegistration.entity.SectorEntity;
 import br.com.employeeRegistration.repository.SectorEmployeeRepository;
 import br.com.employeeRegistration.service.SectorEmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Service
 public class SectorEmployeeServiceImpl implements SectorEmployeeService {
 
     @Autowired

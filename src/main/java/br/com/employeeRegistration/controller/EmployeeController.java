@@ -24,14 +24,15 @@ public class EmployeeController {
             @RequestHeader(value = "name") String name,
             @RequestHeader(value = "cpf") String cpf,
             @RequestHeader(value = "email") String email,
-            @RequestHeader(value = "phone") String phone){
+            @RequestHeader(value = "phone") String phone,
+            @RequestHeader(value = "sector") String sector){
 
         EmployeeDTO dto = EmployeeDTO.builder()
                 .name(name)
                 .cpf(cpf)
                 .email(email)
                 .phone(phone)
-//                .sector(sectorDTO)
+                .sector(sector)
                 .build();
 
         employeeService.employeeInclusion(dto);
