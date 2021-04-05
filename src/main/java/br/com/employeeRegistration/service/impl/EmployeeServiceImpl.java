@@ -1,12 +1,13 @@
 package br.com.employeeRegistration.service.impl;
 
 import br.com.employeeRegistration.dto.EmployeeDTO;
-import br.com.employeeRegistration.entity.EmployeeRegistrationEntity;
+import br.com.employeeRegistration.entity.*;
 import br.com.employeeRegistration.repository.EmployeeRegistrationRepository;
 import br.com.employeeRegistration.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -14,6 +15,18 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private EmployeeRegistrationRepository employeeRegistrationRepository;
+
+    @Autowired
+    private EmailServiceImpl emailService;
+
+    @Autowired
+    private PhoneServiceImpl phoneService;
+
+    @Autowired
+    private SectorEmployeeServiceImpl employeeService;
+
+    @Autowired
+    private SectorServiceimpl sectorService;
 
     /**
      * Method for adding a new employee to the TB_EMPLOYEE_REGISTRATION table
@@ -30,12 +43,22 @@ public class EmployeeServiceImpl implements EmployeeService {
 //        Optional.ofNullable(dto.getDateBirth()).orElseThrow(()-> new NullPointerException("DateBirth cannot be null"));
         Optional.ofNullable(dto.getEmail()).orElseThrow(()-> new NullPointerException("Email cannot be null"));
         Optional.ofNullable(dto.getPhone()).orElseThrow(()-> new NullPointerException("Phone cannot be null"));
-        Optional.ofNullable(dto.getSector()).orElseThrow(()-> new NullPointerException("Sector cannot be null"));
+//        Optional.ofNullable(dto.getSector()).orElseThrow(()-> new NullPointerException("Sector cannot be null"));
 
         EmployeeRegistrationEntity entity = employeeRegistrationRepository.save(convetToEntity(dto));
+        EmailEmployeeEntity email = emailService.inclusionEmail(dto.getEmail(),entity);
+        PhoneEmployeeEntity phone = phoneService.inclusionPhone(dto.getPhone(), entity);
 
+        EmployeeDTO entityDTO = EmployeeDTO.builder()
+                .id(entity.getIdEmployee())
+                .name(entity.getNameEmployee())
+                .cpf(entity.getRegistrationPhysicalPerson())
+                .email(email.getEmailAndress())
+                .phone(phone.getPhoneEmployee())
+//                .sector(dto.getSector())
+                .build();
 
-        return null;
+        return entityDTO ;
     }
 
     /**
@@ -64,7 +87,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         entity.setNameEmployee(dto.getName());
         entity.setRegistrationPhysicalPerson(dto.getCpf());
-        entity.setDateInsert(dto.getDataInsert());
-        return null;
+        entity.setDateInsert(new Date());
+        return entity;
     }
 }
